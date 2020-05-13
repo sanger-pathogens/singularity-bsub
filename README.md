@@ -39,7 +39,7 @@ Compatible with LSF 10.1.
 	LSF_BIN_PATH="/usr/local/lsf/bin"
 	LSF_BIN_PATH="/usr/local/lsf/etc"
 
-# bsub (called from Singularity container)
+### bsub (called from Singularity container)
 
   PATH=/singularity-bsub:${PATH}
 	bsub -o job.o -e job.e -R "select[mem>1000] rusage[mem=1000]" -M1000 myprog
