@@ -11,7 +11,7 @@ Use of bsub requires the following environment variables to be set:
 
 <b>BSUB_ENVIRONMENT_PROFILES</b> - a comma separated list of full paths to profile
                                    files that should be executed before running the
-                                   Singularity command. This is used to setup the
+                                   Singularity command. This is used to set up the
                                    environment in the bsub.
 
 <b>BSUB_SINGULARITY_EXEC</b> - Singularity exe path
@@ -31,13 +31,11 @@ Compatible with LSF 10.1.
 
 ## Example
 
-### bsub
-
-  export BSUB_ENVIRONMENT_PROFILES="/path/to/my/profile1.rc"
-  export BSUB_SINGULARITY_EXEC="/bin/singularity"
-  export CURRENT_SINGULARITY_IMAGE="/software/myimage.img"
-  export LSF_BIN_PATH="/usr/local/lsf/bin"
-  export LSF_BIN_PATH="/usr/local/lsf/etc"
-  bsub -o job.o -e job.e -R "select[mem>1000] rusage[mem=1000]" -M1000 myprog
+	export BSUB_ENVIRONMENT_PROFILES="/path/to/my/profile1.rc"
+	export BSUB_SINGULARITY_EXEC="/bin/singularity"
+	export CURRENT_SINGULARITY_IMAGE="/software/myimage.img"
+	export LSF_BIN_PATH="/usr/local/lsf/bin"
+	export LSF_BIN_PATH="/usr/local/lsf/etc"
+	bsub -o job.o -e job.e -R "select[mem>1000] rusage[mem=1000]" -M1000 myprog
 
 Where myprog is a program provided by myimage.img.
