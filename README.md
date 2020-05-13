@@ -29,13 +29,19 @@ placed at the front of the PATH variable.
 
 Compatible with LSF 10.1.
 
-## Example
+## Examples
 
-	export BSUB_ENVIRONMENT_PROFILES="/path/to/my/profile1.rc"
-	export BSUB_SINGULARITY_EXEC="/bin/singularity"
-	export CURRENT_SINGULARITY_IMAGE="/software/myimage.img"
-	export LSF_BIN_PATH="/usr/local/lsf/bin"
-	export LSF_BIN_PATH="/usr/local/lsf/etc"
+### Variables
+
+	BSUB_ENVIRONMENT_PROFILES="/path/to/my/profile1.rc"
+	BSUB_SINGULARITY_EXEC="/bin/singularity"
+	CURRENT_SINGULARITY_IMAGE="/software/myimage.img"
+	LSF_BIN_PATH="/usr/local/lsf/bin"
+	LSF_BIN_PATH="/usr/local/lsf/etc"
+
+# bsub (called from Singularity container)
+
+  PATH=/singularity-bsub:${PATH}
 	bsub -o job.o -e job.e -R "select[mem>1000] rusage[mem=1000]" -M1000 myprog
 
 Where myprog is a program provided by myimage.img.
