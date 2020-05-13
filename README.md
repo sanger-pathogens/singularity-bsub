@@ -41,7 +41,7 @@ Compatible with LSF 10.1.
 
 ### bsub (called from Singularity container)
 
-  PATH=/singularity-bsub:${PATH}
+	PATH=/singularity-bsub:${PATH}
 	bsub -o job.o -e job.e -R "select[mem>1000] rusage[mem=1000]" -M1000 myprog
 
 Where myprog is a program provided by myimage.img.
