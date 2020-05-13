@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+##############################################################################
+# Stub script for bjobs.                                                      #
+#                                                                            #
+# Author: K. Pepper                                                          #
+#                                                                            #
+##############################################################################
+
+#
+# Validate that required variables are set.
+#
+validate() {
+
+  if [[ "${LSF_BIN_PATH}" == "" ]]
+  then
+    echo "FATAL ERROR: Environment variable LSF_BIN_PATH is not set."
+    exit ${ERROR_CODE}
+  fi
+
+  if [[ "${LSF_ETC_PATH}" == "" ]]
+  then
+    echo "FATAL ERROR: Environment variable LSF_ETC_PATH is not set."
+    exit ${ERROR_CODE}
+  fi
+}
+
+################################ Main #########################################
+
+# Do miscellaneous validation of input criteria
+validate
+
+# Insert LSF paths at front of PATH variable
+export PATH=${LSF_BIN_PATH}:${LSF_ETC_PATH}:${PATH}
+bjobs "$@"
+exit $?

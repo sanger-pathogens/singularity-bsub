@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+
+##############################################################################
+# The script pretends to be LSF bsub but will bsub a given command using     #
+# Singularity behind the scenes. It's a kind of bsub decorator.              #
+# Compatible with LSF 10.1.                                                  #
+#                                                                            #
+# Author: K. Pepper                                                          #
+#                                                                            #
+##############################################################################
+
+ERROR_CODE=255
+
+env_setup_cmd=""
+
+#
+# List of arguments that take values. Order is important, e.g. -eo should be before -e
+# to avoid pattern matching issues
+#
+value_args=( \
+  "-app" "-alloc_flags" "-a" "-b" "-C" "-clusters" "-cn_cu" "-cn_mem" "-core_isolation" "-csm" "-cwd" "-c" \
+  "-datagrp" "-data" "-D" "-Ep" "-E" "-env" "-eo" "-eptl" "-extsched" "-ext" "-e" "-F" "-freq" "-f" "-G" \
+  "-g" "-hostfile" "-is" "-i" "-Jd" "-J" "-jsdl_strict" "-jsdl" "-jsm" "-k" "-Lp" "-L" "-ln_mem" "-ln_slots" \
+  "-M" "-mig" "-m" "-notify" "-network" "-nnodes" "-n" "-oo" "-outdir" "-o" "-P" "-pack" "-ptl" "-p" "-Q" \
+  "-q" "-R" "-rnc" "-S" "-sla" "-smt" "-sp" "-stage" "-step_cgroup" "-s" "-T" "-t" "-U" "-u" "-v" \
+  "-We" "-W" "-wa" "-wt" "-w")
+
+#
+# Construct the environment setup string to be used in the bsub.
+# i.e. which profiles to source.
+#
+construct_env_setup_cmd() {
+
+  if [[ "${BSUB_ENVIRONMENT_PROFILES}" != "" ]]
+  then
+    for i in ${BSUB_ENVIRONMENT_PROFILES//,/ }
+    do
+      env_setup_cmd="${env_setup_cmd}source ${i}; "
+    done
+  fi
+}
+
+#
+# Validate that required variables are set.
+#
+validate() {
+
+  if [[ "${CURRENT_SINGULARITY_IMAGE}" == "" ]]
+  then
+    echo "FATAL ERROR: Environment variable CURRENT_SINGULARITY_IMAGE is not set."
+    exit ${ERROR_CODE}
+  fi
+
+  if [[ "${LSF_BIN_PATH}" == "" ]]
+  then
+    echo "FATAL ERROR: Environment variable LSF_BIN_PATH is not set."
+    exit ${ERROR_CODE}
+  fi
+
+  if [[ "${LSF_ETC_PATH}" == "" ]]
+  then
+    echo "FATAL ERROR: Environment variable LSF_ETC_PATH is not set."
+    exit ${ERROR_CODE}
+  fi
+}
+
+#
+# Given a bsub parameter, check if it's actually a concatenated
+# param-value, like -M1000 and split it by introducing a space.
+# If it's not a concatenated param-value then return an empty string.
+#
+split_arg_value() {
+  local arg="$1"
+
+  local result=""
+  local len=0
+
+  # Try to find a matching parameter string by looping through our allowed list
+  for value_arg in ${value_args[@]}
+  do
+    if [[ "${arg}" =~ ^${value_arg}$ ]]
+    then
+      # We have a non-concatenated match on a flag, so no need to
+      # to carry on as this is easy to deal with
+      break
+    elif [[ "${arg}" =~ ^${value_arg}[^[:space:]] ]]
+    then
+      # We have a concatenated arg/value, e.g. -M1000.
+      # Split them and return the result.
+      # [we also escape the value for good measure]
+      result="${value_arg} "$(printf "%q" "${arg:${#value_arg}:${#arg}}")
+      break
+    fi
+  done
+
+  echo "${result}"
+}
+
+################################ Main #########################################
+
+# Do miscellaneous validation of input criteria
+validate
+
+# Construct the enviroment setup command
+construct_env_setup_cmd
+
+# Insert LSF paths at front of PATH variable
+export PATH=${LSF_BIN_PATH}:${LSF_ETC_PATH}:${PATH}
+bsub_cmd="${LSF_BIN_PATH}/bsub"
+
+#
+# Parse command line bsub arguments.
+# Copy arg flags and arg values to a variable and separate from the
+# actual command to run.
+#
+while [ $# -gt 0 ] ; do
+
+  case $1 in
+    -ar | -B | -datachk | -H | -hl | -I | -tty | -Ip | -IS | -ISp | \
+    -ISs | -Is | -IX | -K | -N | -Ne | -r | -rn | -ul | -XF | -x | \
+    -Zs | -h | -help | -V)
+      # This case is for flag arguments with no values
+      bsub_cmd="${bsub_cmd} $1"
+      shift
+      ;;
+    -gpu)
+      # Special case mainly to handle "-gpu -"
+      temp_arg="$(printf "%q" "$1")"
+      shift
+      if [[ $1 =~ ^-$ ]]
+      then
+        temp_arg="${temp_arg} $1"
+        shift
+      elif [[ ! $1 =~ ^-.*$ ]]
+      then
+        temp_arg="${temp_arg} $(printf "%q" "$1")"
+        shift
+      fi
+      bsub_cmd="${bsub_cmd} ${temp_arg}"
+      ;;
+    -*)
+      # Handle <flag value> arguments.
+      # NOTE: We have to be careful here as concatenated flag/values
+      # are allowed by bsub, e.g. -M1000 instead of -M 1000
+      next_arg="$1"
+      split_result=$(split_arg_value "${next_arg}")
+      if [[ "${split_result}" != "" ]]
+      then
+        bsub_cmd="${bsub_cmd} ${split_result}"
+      else
+        bsub_cmd="${bsub_cmd} ${next_arg} "$(printf "%q" "$2")
+        shift
+      fi
+      shift
+      ;;
+    *)
+      # Handle the command argument
+      break
+      ;;
+  esac
+done
+
+# The remaining arguments should be the actual command and associated arguments...
+command="$@"
+shell_cmd="/bin/bash -c '${env_setup_cmd} \"\${BSUB_SINGULARITY_EXEC}\" run \"${CURRENT_SINGULARITY_IMAGE}\" ${command}'"
+eval "${bsub_cmd} ${shell_cmd}"
+exit $?
