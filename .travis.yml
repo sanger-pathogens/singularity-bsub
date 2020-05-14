@@ -12,7 +12,6 @@ install:
 - git checkout -b $UUID
 - export TIMESTAMP_VERSION=$(date -u '+%Y.%m.%d.%H.%M.%S.%3N')
 - export TRAVIS_TAG=$(if [ "$TRAVIS_BRANCH" == "master" ]; then echo "v${TIMESTAMP_VERSION}"; else echo "$TRAVIS_BRANCH-${TIMESTAMP_VERSION}"; fi)
-- sed -i 's:^version = .*$:version = '"$TIMESTAMP_VERSION"':g' dist.ini
 - git commit -am "Updated the version number to $TIMESTAMP_VERSION"
 - git tag $TRAVIS_TAG
 - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then git push -q "https://${GITHUB_OAUTH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}" $TRAVIS_TAG; fi
