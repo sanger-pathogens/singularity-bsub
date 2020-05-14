@@ -4,6 +4,7 @@ Provides wrapper scripts for executing LSF commands from within a Singularity co
 The bsub script will bsub a given command using a specified Singularity image.
 
 [![Build Status](https://travis-ci.org/sanger-pathogens/singularity-bsub.svg?branch=master)](https://travis-ci.org/sanger-pathogens/singularity-bsub)
+
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/singularity-bsub/blob/master/LICENSE)
 
 ## Requirements
@@ -46,3 +47,8 @@ Compatible with LSF 10.1.
 	bsub -o job.o -e job.e -R "select[mem>1000] rusage[mem=1000]" -M1000 myprog
 
 Where myprog is a program provided by myimage.img.
+
+## License
+
+singularity-bsub is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/singularity-bsub/blob/master/LICENSE).
+
