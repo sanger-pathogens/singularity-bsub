@@ -1,6 +1,6 @@
 # singularity-bsub
 
-Provides wrapper scripts for executing LSF commands from within a Singularity container.
+Provides wrapper scripts for executing LSF commands from within a [Singularity](https://sylabs.io) container.
 The bsub script will bsub a given command using a specified Singularity image.
 
 [![Build Status](https://travis-ci.org/sanger-pathogens/singularity-bsub.svg?branch=master)](https://travis-ci.org/sanger-pathogens/singularity-bsub)  
@@ -50,4 +50,3 @@ Where myprog is a program provided by myimage.img.
 ## License
 
 singularity-bsub is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/singularity-bsub/blob/master/LICENSE).
-
