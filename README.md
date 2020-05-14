@@ -3,6 +3,7 @@
 Provides wrapper scripts for executing LSF commands from within a Singularity container.
 The bsub script will bsub a given command using a specified Singularity image.
 
+[![Build Status](https://travis-ci.org/sanger-pathogens/singularity-bsub.svg?branch=master)](https://travis-ci.org/sanger-pathogens/singularity-bsub)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/singularity-bsub/blob/master/LICENSE)
 
 ## Requirements
@@ -33,7 +34,7 @@ Compatible with LSF 10.1.
 
 ### Variables
 
-	BSUB_ENVIRONMENT_PROFILES="/path/to/my/profile1.rc"
+	BSUB_ENVIRONMENT_PROFILES="/path/to/my/profile1.rc,/path/to/my/profile2.rc"
 	BSUB_SINGULARITY_EXEC="/bin/singularity"
 	CURRENT_SINGULARITY_IMAGE="/software/myimage.img"
 	LSF_BIN_PATH="/usr/local/lsf/bin"
