@@ -96,6 +96,18 @@ split_arg_value() {
   echo "${result}"
 }
 
+#
+# read everything on STDIN if it's not a tty, and store as `pipe_stdin`
+# N.B. this will read stdin from a pipe, e.g.
+#     echo "my_script.sh" | bsub
+# but won't block waiting for input if there's no pipe
+#
+read_pipe_stdin() {
+   if [ ! -t 0 ]; then
+      pipe_stdin=$(</dev/stdin)
+   fi
+}
+
 ################################ Main #########################################
 
 # Do miscellaneous validation of input criteria
@@ -160,8 +172,10 @@ while [ $# -gt 0 ] ; do
   esac
 done
 
+read_pipe_stdin
+
 # The remaining arguments should be the actual command and associated arguments...
 command="$@"
 shell_cmd="/bin/bash -c '${env_setup_cmd} \"\${BSUB_SINGULARITY_EXEC}\" run \"${CURRENT_SINGULARITY_IMAGE}\" ${command}'"
-eval "${bsub_cmd} ${shell_cmd}"
+eval "echo \"${pipe_stdin}\" | ${bsub_cmd} ${shell_cmd}"
 exit $?
