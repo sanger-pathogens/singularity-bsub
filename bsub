@@ -179,13 +179,21 @@ while [ $# -gt 0 ] ; do
   esac
 done
 
-read_pipe_stdin
-
 # The remaining arguments should be the actual command and associated arguments...
 command="$@"
+# if there were no remaining argument, see if anything was passed by pipe
+# (this mimics the "real" bsub, only looks at STDIN when no a command is given as an argument)
+if [[ "" == "${command}" ]]; then
+  read_pipe_stdin
+  if [[ "" != "${command}" ]]; then
+    # something passed by pipe
+    # note this could be of the form "cmd1; cmd2; cmd3", "cmd1 && cmd2", contain newlines, etc.
+    # => make it a single command with `bash -c`
+   command="bash -c \"${pipe_stdin}\""
+fi
 shell_cmd="/bin/bash -c '${env_setup_cmd} \"\${BSUB_SINGULARITY_EXEC}\" run \"${CURRENT_SINGULARITY_IMAGE}\" ${command}'"
 echo "about to run this command:"
-echo "echo \"${pipe_stdin}\" | ${bsub_cmd} ${shell_cmd}"
+echo "${bsub_cmd} ${shell_cmd}"
 echo "------------------------------------ end --------------------------------------"
-eval "echo \"${pipe_stdin}\" | ${bsub_cmd} ${shell_cmd}"
+eval "${bsub_cmd} ${shell_cmd}"
 exit $?
