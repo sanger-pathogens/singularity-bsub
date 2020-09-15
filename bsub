@@ -106,6 +106,13 @@ read_pipe_stdin() {
    if [ ! -t 0 ]; then
       pipe_stdin=$(</dev/stdin)
    fi
+   if [[ "" != "${pipe_stdin}" ]]; then
+      echo "bsub was pass a command on stdin:"
+      echo "${pipe_stdin}"
+      echo "------------------------------------ end --------------------------------------"
+   else
+      echo "bsub did not read anything from STDIN"
+   fi
 }
 
 ################################ Main #########################################
@@ -150,7 +157,7 @@ while [ $# -gt 0 ] ; do
       fi
       bsub_cmd="${bsub_cmd} ${temp_arg}"
       ;;
-    -*)
+    -*) 
       # Handle <flag value> arguments.
       # NOTE: We have to be careful here as concatenated flag/values
       # are allowed by bsub, e.g. -M1000 instead of -M 1000
@@ -177,5 +184,8 @@ read_pipe_stdin
 # The remaining arguments should be the actual command and associated arguments...
 command="$@"
 shell_cmd="/bin/bash -c '${env_setup_cmd} \"\${BSUB_SINGULARITY_EXEC}\" run \"${CURRENT_SINGULARITY_IMAGE}\" ${command}'"
+echo "about to run this command:"
+echo "echo \"${pipe_stdin}\" | ${bsub_cmd} ${shell_cmd}"
+echo "------------------------------------ end --------------------------------------"
 eval "echo \"${pipe_stdin}\" | ${bsub_cmd} ${shell_cmd}"
 exit $?
