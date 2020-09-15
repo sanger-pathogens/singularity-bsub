@@ -189,8 +189,7 @@ if [[ "" == "${command}" ]]; then
     # something passed by pipe
     # note this could be of the form "cmd1; cmd2; cmd3", "cmd1 && cmd2", contain newlines, etc.
     # => make it a single command with `bash -c`
-    command="bash -c \"${pipe_stdin}\""
-  fi
+   command="bash -c \"${pipe_stdin}\""
 fi
 shell_cmd="/bin/bash -c '${env_setup_cmd} \"\${BSUB_SINGULARITY_EXEC}\" run \"${CURRENT_SINGULARITY_IMAGE}\" ${command}'"
 echo "about to run this command:"
